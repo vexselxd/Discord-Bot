@@ -1,42 +1,22 @@
-import random
+import requests
 
-def gen_pass(pass_length):
-    elements = "+-/*!&$#?=@abcdefghijklmnñopqrstuvwxyzABCDEFGHIJKLMNÑOPQRSTUVWXYZ1234567890"
-    password = ""
-
-    for i in range(pass_length):
-        password += random.choice(elements)
-
-    return password
-
-def game():
-    answers = [
-        "Sigue por este camino y lograrás todo.",
-        "Vaya... ¡Qué mala suerte!",
-        "Yo digo que sí.",
-        "Tengo mis dudas...",
-        "La verdad, no lo sé.",
-        "Supondremos que sí.",
-        "Naaaaaa...",
-        "Creo que no.",
-        "Supongamos que sí.",
-    ]
-    return random.choice(answers)
-
-def currency():
-    results = [
-        "¡Y es cara!",
-        "¡Y es escudo!",
-    ]
-    return random.choice(results)
-
-def gen_emoji():
-    emoji = ["\U0001f600", "\U0001f642", "\U0001F606", "\U0001F923"]
-    return random.choice(emoji)
-
-def flip_coin():
-    flip = random.randint(0, 2)
-    if flip == 0:
-        return "CARA"
-    else:
-        return "CRUZ"
+def get_air_quality(city):
+    """
+    Función que obtiene la calidad del aire utilizando una API pública sin clave.
+    """
+    try:
+        
+        url = f"http://api.airvisual.com/v2/nearest_city?city={city}"
+        response = requests.get(url)
+        data = response.json()
+        
+        
+        if response.status_code == 200:
+           
+            aqi = data.get('data', {}).get('current', {}).get('pollution', {}).get('aqius', 'No disponible')
+            return {'aqi': aqi}
+        else:
+            return {'error': 'Error al obtener la calidad del aire'}
+    
+    except requests.exceptions.RequestException as e:
+        return {'error': f"Error al conectarse con la API: {e}"}

@@ -1,7 +1,9 @@
 import discord
+import random
+import os
 from discord.ext import commands 
-from bot_logic import gen_pass, game, currency, gen_emoji, flip_coin
-#import os
+from bot_logic import get_air_quality
+
 
 intents = discord.Intents.default()
 intents.members = True 
@@ -14,20 +16,6 @@ bot = commands.Bot(command_prefix='$', intents=intents)
 async def on_ready():
     print(f'We have logged in as {bot.user}')
 
-@bot.event
-async def on_guild_join(guild):
-    print(f"Me uní al servidor: {guild.name}")
-    channel = next(
-        (chan for chan in guild.text_channels if chan.permissions_for(guild.me).read_messages),
-        None
-    )
-    if channel:
-        await channel.send(f"¡Hola a todos en **{guild.name}**! 🙌\n"
-                           "Gracias por invitarme. Usa `$help` para ver todos mis comandos.")
-
-
-
-
 @bot.command()
 async def hello(ctx):
     await ctx.send(f'Hola, soy un bot {bot.user}!')
@@ -37,28 +25,23 @@ async def heh(ctx, count_heh = 5):
     await ctx.send("he" * count_heh)
 
 @bot.command()
-async def password(ctx, password_count = 20):
-    await ctx.send(gen_pass(password_count))
+async def air(ctx, city: str):
+    """
+    Comando que obtiene la calidad del aire utilizando el nombre de la ciudad.
+    """
+    await ctx.send(f"Consultando la calidad del aire en la ciudad: {city}...")
 
-@bot.command()
-async def ball (ctx):
-    await ctx.send(game())
+    air_quality_data = get_air_quality(city)
 
-@bot.command()
-async def currency(ctx):
-    await ctx.send(currency())
+    if 'error' in air_quality_data:
+        await ctx.send(f"Error: {air_quality_data['error']}")
+    else:
+        aqi = air_quality_data.get('aqi', 'No disponible')
+        await ctx.send(f"La calidad del aire (AQI) en {city} es: {aqi}")
 
-@bot.command()
-async def emoji(ctx):
-    await ctx.send(gen_emoji())
 
-@bot.command()
-async def flip(ctx):
-    await ctx.send(flip_coin())
+bot.run("token")
 
-token = "token" 
 
-if token:
-    bot.run(token)
-else:
-    print("Error: No se encontró el token.")
+
+
